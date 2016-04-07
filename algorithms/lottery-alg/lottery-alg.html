@@ -1,0 +1,230 @@
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="lottery-alg">
+  <style>
+  .flexchild {
+    @apply(--layout-flex);
+  }
+  .container {
+    margin-top: 10px;
+    @apply(--layout-horizontal);
+  }
+  #logs_lottery {
+    overflow-y: scroll;
+    max-height: 128px;
+    padding: 0px;
+  }
+  #pro_div_lottery {
+    overflow-y: scroll;
+    height: auto;
+    max-height: 200px;
+  }
+  #process_lottery {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  #process_lottery li {
+    display: inline;
+  }
+  </style>
+
+  <template>
+    <paper-drawer-panel force-narrow>
+      <paper-header-panel class="flex layout vertical" drawer>
+        <paper-toolbar>
+          <div>Menu</div>
+        </paper-toolbar>
+        <div>
+          <paper-item on-tap="showIndex" paper-drawer-toggle>Index</paper-item>
+          <paper-item on-tap="showFifo" paper-drawer-toggle>FIFO</paper-item>
+          <paper-item on-tap="showSjf" paper-drawer-toggle>SJF</paper-item>
+          <paper-item on-tap="showPriority" paper-drawer-toggle>Priority</paper-item>
+          <paper-item on-tap="showRound" paper-drawer-toggle>Round-Robin</paper-item>
+          <paper-item on-tap="showRoundPriority" paper-drawer-toggle>Round-Robin with priority</paper-item>
+          <paper-item on-tap="showLottery" paper-drawer-toggle>Lottery</paper-item>
+        </div>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div>Lottery</div>
+        </paper-toolbar>
+        <div id="content">
+          <paper-card id="notice" heading="Informations">
+            <div class="card-content">
+              <p>Lottery: is a probabilistic scheduling algorithm for processes in an operating system. Processes are each assigned some number of lottery tickets, and the scheduler draws a random ticket to select the next process.</p>
+            </div>
+          </paper-card>
+
+          <div class="container">
+            <paper-card id="simulation_options" heading="Simulation">
+              <div class="card-content">
+                <paper-input id="number_process_lottery" type="number" min="0" pattern="\d*" label="Number of process"></paper-input>
+                <paper-input id="size_process_lottery" type="number" min="0" pattern="\d*" label="Max size of process"></paper-input>
+                <paper-button id="generate_lottery" raised onclick="generate_lottery()">Generate processes</paper-button>
+                <paper-button id="scale_lottery" raised onclick="scale_lottery()">Scale</paper-button>
+              </div>
+            </paper-card>
+
+            <paper-card id="simulation_logs" class="flexchild" heading="Simulation Logs">
+              <div class="card-content">
+                <ul id="logs_lottery">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+
+          <div class="container">
+            <paper-card id="processes" class="flexchild" heading="Processes">
+              <div id="pro_div_lottery" class="card-content">
+                <ul id="process_lottery">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+
+  <script>
+	Polymer({
+		is: 'lottery-alg',
+		behaviors: [Polymer.NeonAnimatableBehavior],
+		properties: {
+		  animationConfig: {
+		    value: function () {
+		      return {
+      			'entry': {
+      			  name: 'slide-from-left-animation',
+      			  node: this
+      			},
+      			'exit': {
+      			  name: 'fade-out-animation',
+      			  node: this
+      			}
+   		    }
+		    }
+		  }
+		},
+    showIndex: function() {
+				this.fire('show-index');
+		},
+    showFifo: function() {
+				this.fire('show-fifo');
+		},
+    showSjf: function() {
+				this.fire('show-sjf');
+		},
+    showPriority: function() {
+				this.fire('show-priority');
+		},
+    showRound: function() {
+				this.fire('show-round');
+		},
+    showRoundPriority: function() {
+				this.fire('show-round-priority');
+		},
+    showLottery: function() {
+				this.fire('show-lottery');
+		}
+	});
+
+    var generated_lottery = false;
+    var process_array_lottery = [];
+
+    function generate_lottery() {
+      process_array_lottery.length = 0;
+
+      var number_lottery = document.getElementById("number_process_lottery");
+      var size_lottery = document.getElementById("size_process_lottery");
+
+      if (number_lottery.value <= 0 || size_lottery.value <= 0) {
+        window.alert("Number has to be a positive integer.");
+      } else if (!(number_lottery.value % 1 === 0) || !(size_lottery.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.");
+      } else if ((number_lottery.value === null || number_lottery.value === "") || (size_lottery.value === null || size_lottery.value === "")) {
+        window.alert("Please fill all fields.");
+      } else {
+        var ul = document.getElementById("process_lottery");
+
+        while (ul.firstChild) {
+          ul.removeChild(ul.firstChild );
+        }
+
+        for (i = 0; i < number_lottery.value; i++) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          li.setAttribute('style','display: inline;');
+          ul.appendChild(li);
+
+          var id = i;
+          var priority = Math.round(Math.floor((Math.random() * 100) + 1));
+          var thissize = Math.floor((Math.random() * size_lottery.value) + 1);
+          var sortNumber = Math.round(Math.floor((Math.random() * 100000) + 1));
+
+          var proc = {pid: id, pri: priority, psize: thissize, lottery: sortNumber};
+          process_array_lottery.push(proc);
+
+          var element = "<paper-card id="+id+"_lottery"+" style='margin: 0 5px 5px 0; width: 130px;'><div class='card-content'><p>ID: "+id+"</p><p>Priority: "+priority+"</p><p>Size: "+thissize+"</p></div></paper-card>";
+
+          li.innerHTML = li.innerHTML + element;
+        }
+
+        var button = document.getElementById("scale_lottery");
+        button.disabled = false;
+        generated_lottery = true;
+      }
+    }
+
+    function scale_lottery () {
+      var button = document.getElementById("scale_lottery");
+      button.disabled = true;
+
+      var log = document.getElementById("logs_lottery");
+
+      while (log.firstChild) {
+        log.removeChild(log.firstChild);
+      }
+
+      if (!generated_lottery) {
+        window.alert("Please generate the processes.");
+        button.disabled = false;
+      } else {
+        for (i = 0; i < process_array_lottery.length; i++) {
+            setTimeout("do_process_lottery("+i+")", 1000*process_array_lottery[i].pid);
+        }
+      }
+    }
+
+    function do_process_lottery (identification) {
+      var log = document.getElementById("logs_lottery");
+      var li = document.createElement('li');
+      li.setAttribute('class','item');
+      log.appendChild(li);
+
+      process_array_lottery.sort(function(a,b) {return b.lottery - a.lottery});
+
+      var pid = process_array_lottery[identification].pid;
+
+      var element ="Process: "+pid+" is finished.";
+
+      li.innerHTML = li.innerHTML + element;
+
+      var card = document.getElementById(pid+"_lottery");
+      card.style.backgroundColor = "#cceeff";
+    }
+  </script>
+</dom-module>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-br" xml:lang="pt-br">
+  <head>
+  	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  	<meta name="apple-mobile-web-app-capable" content="yes">
+  	<meta name="mobile-web-app-capable" content="yes">
+
+  	<script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="bower_components/neon-animation/neon-animated-pages.html">
+    <link rel="import" href="bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+    <!-- Pages
+         Páginas -->
+  	<link rel="import" href="pages/index-sche/index-sche.html">
+
+  	<!-- Scalling Algoriths Simulators
+  	     Simuladores dos algoritmos de escalonamento -->
+    <link rel="import" href="algorithms/fi-fo/fi-fo.html">
+    <link rel="import" href="algorithms/lottery-alg/lottery-alg.html">
+    <link rel="import" href="algorithms/priority-alg/priority-alg.html">
+    <link rel="import" href="algorithms/round-priority/round-priority.html">
+    <link rel="import" href="algorithms/round-robin/round-robin.html">
+    <link rel="import" href="algorithms/sj-first/sj-first.html">
+
+  	<!-- Global Stylesheet -->
+  	<link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+    <body class="fullbleed layout vertical" unresolved>
+    	<template is="dom-bind" id="app">
+        <neon-animated-pages class="flex" selected="[[selecionado]]">
+        		<index-sche></index-sche>
+            <fi-fo></fi-fo>
+            <sj-first></sj-first>
+            <priority-alg></priority-alg>
+            <round-robin></round-robin>
+            <round-priority></round-priority>
+            <lottery-alg></lottery-alg>
+        </neon-animated-pages>
+    	</template>
+
+    	<script>
+        var app = document.querySelector('#app');
+        app.selecionado = 0;
+
+        document.addEventListener('show-index', function() {
+  				app.selecionado = 0;
+  			});
+  			document.addEventListener('show-fifo', function() {
+  				app.selecionado = 1;
+  			});
+        document.addEventListener('show-sjf', function() {
+          app.selecionado = 2;
+        });
+        document.addEventListener('show-priority', function() {
+          app.selecionado = 3;
+        });
+        document.addEventListener('show-round', function() {
+          app.selecionado = 4;
+        });
+        document.addEventListener('show-round-priority', function() {
+          app.selecionado = 5;
+        });
+        document.addEventListener('show-lottery', function() {
+          app.selecionado = 6;
+        });
+    	</script>
+    </body>
+</html>

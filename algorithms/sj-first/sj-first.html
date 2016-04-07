@@ -1,0 +1,229 @@
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="sj-first">
+  <style>
+  .flexchild {
+    @apply(--layout-flex);
+  }
+  .container {
+    margin-top: 10px;
+    @apply(--layout-horizontal);
+  }
+  #logs_sjf {
+    overflow-y: scroll;
+    max-height: 128px;
+    padding: 0px;
+  }
+  #pro_div_sjf {
+    overflow-y: scroll;
+    height: auto;
+    max-height: 200px;
+  }
+  #process_sjf {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  #process_sjf li {
+    display: inline;
+  }
+  </style>
+
+  <template>
+    <paper-drawer-panel force-narrow>
+      <paper-header-panel class="flex layout vertical" drawer>
+        <paper-toolbar>
+          <div>Menu</div>
+        </paper-toolbar>
+        <div>
+          <paper-item on-tap="showIndex" paper-drawer-toggle>Index</paper-item>
+          <paper-item on-tap="showFifo" paper-drawer-toggle>FIFO</paper-item>
+          <paper-item on-tap="showSjf" paper-drawer-toggle>SJF</paper-item>
+          <paper-item on-tap="showPriority" paper-drawer-toggle>Priority</paper-item>
+          <paper-item on-tap="showRound" paper-drawer-toggle>Round-Robin</paper-item>
+          <paper-item on-tap="showRoundPriority" paper-drawer-toggle>Round-Robin with priority</paper-item>
+          <paper-item on-tap="showLottery" paper-drawer-toggle>Lottery</paper-item>
+        </div>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div>Shortest Job First</div>
+        </paper-toolbar>
+        <div id="content">
+          <paper-card id="notice" heading="Informations">
+            <div class="card-content">
+              <p>Shortest Job First (SJF): is a scheduling policy that selects the waiting process with the smallest execution time to execute next.</p>
+            </div>
+          </paper-card>
+
+          <div class="container">
+            <paper-card id="simulation_options" heading="Simulation">
+              <div class="card-content">
+                <paper-input id="number_process_sjf" type="number" min="0" pattern="\d*" label="Number of process"></paper-input>
+                <paper-input id="size_process_sjf" type="number" min="0" pattern="\d*" label="Max size of process"></paper-input>
+                <paper-button id="generate_sjf" raised onclick="generate_sjf()">Generate processes</paper-button>
+                <paper-button id="scale_sjf" raised onclick="scale_sjf()">Scale</paper-button>
+              </div>
+            </paper-card>
+
+            <paper-card id="simulation_logs" class="flexchild" heading="Simulation Logs">
+              <div class="card-content">
+                <ul id="logs_sjf">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+
+          <div class="container">
+            <paper-card id="processes" class="flexchild" heading="Processes">
+              <div id="pro_div_sjf" class="card-content">
+                <ul id="process_sjf">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+
+  <script>
+	Polymer({
+		is: 'sj-first',
+		behaviors: [Polymer.NeonAnimatableBehavior],
+		properties: {
+		  animationConfig: {
+		    value: function () {
+		      return {
+      			'entry': {
+      			  name: 'slide-from-left-animation',
+      			  node: this
+      			},
+      			'exit': {
+      			  name: 'fade-out-animation',
+      			  node: this
+      			}
+   		    }
+		    }
+		  }
+		},
+    showIndex: function() {
+				this.fire('show-index');
+		},
+    showFifo: function() {
+				this.fire('show-fifo');
+		},
+    showSjf: function() {
+				this.fire('show-sjf');
+		},
+    showPriority: function() {
+				this.fire('show-priority');
+		},
+    showRound: function() {
+				this.fire('show-round');
+		},
+    showRoundPriority: function() {
+				this.fire('show-round-priority');
+		},
+    showLottery: function() {
+				this.fire('show-lottery');
+		}
+	});
+
+    var generated_sjf = false;
+    var process_array_sjf = [];
+
+    function generate_sjf() {
+      process_array_sjf.length = 0;
+
+      var number_sjf = document.getElementById("number_process_sjf");
+      var size_sjf = document.getElementById("size_process_sjf");
+
+      if (number_sjf.value <= 0 || size_sjf.value <= 0) {
+        window.alert("Number has to be a positive integer.");
+      } else if (!(number_sjf.value % 1 === 0) || !(size_sjf.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.");
+      } else if ((number_sjf.value === null || number_sjf.value === "") || (size_sjf.value === null || size_sjf.value === "")) {
+        window.alert("Please fill all fields.");
+      } else {
+        var ul = document.getElementById("process_sjf");
+
+        while (ul.firstChild) {
+          ul.removeChild(ul.firstChild );
+        }
+
+        for (i = 0; i < number_sjf.value; i++) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          li.setAttribute('style','display: inline;');
+          ul.appendChild(li);
+
+          var id = i;
+          var priority = Math.round(Math.floor((Math.random() * 100) + 1));
+          var thissize = Math.floor((Math.random() * size_sjf.value) + 1);
+
+          var proc = {pid: id, pri: priority, psize: thissize};
+          process_array_sjf.push(proc);
+
+          var element = "<paper-card id="+id+"_sjf"+" style='margin: 0 5px 5px 0; width: 130px;'><div class='card-content'><p>ID: "+id+"</p><p>Priority: "+priority+"</p><p>Size: "+thissize+"</p></div></paper-card>";
+
+          li.innerHTML = li.innerHTML + element;
+        }
+
+        var button = document.getElementById("scale_sjf");
+        button.disabled = false;
+        generated_sjf = true;
+      }
+    }
+
+    function scale_sjf () {
+      var button = document.getElementById("scale_sjf");
+      button.disabled = true;
+
+      var log = document.getElementById("logs_sjf");
+
+      while (log.firstChild) {
+        log.removeChild(log.firstChild);
+      }
+
+      if (!generated_sjf) {
+        window.alert("Please generate the processes.");
+        button.disabled = false;
+      } else {
+        for (i = 0; i < process_array_sjf.length; i++) {
+            setTimeout("do_process_sjf("+i+")", 1000*process_array_sjf[i].pid);
+        }
+      }
+    }
+
+    function do_process_sjf (identification) {
+      var log = document.getElementById("logs_sjf");
+      var li = document.createElement('li');
+      li.setAttribute('class','item');
+      log.appendChild(li);
+
+      process_array_sjf.sort(function(a,b) {return a.psize - b.psize});
+
+      var pid = process_array_sjf[identification].pid;
+
+      var element ="Process: "+pid+" is finished.";
+
+      li.innerHTML = li.innerHTML + element;
+
+      var card = document.getElementById(pid+"_sjf");
+      card.style.backgroundColor = "#cceeff";
+    }
+  </script>
+</dom-module>

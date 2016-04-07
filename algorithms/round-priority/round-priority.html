@@ -1,0 +1,262 @@
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="round-priority">
+  <style>
+  .flexchild {
+    @apply(--layout-flex);
+  }
+  .container {
+    margin-top: 10px;
+    @apply(--layout-horizontal);
+  }
+  #logs_roundpri {
+    overflow-y: scroll;
+    max-height: 189px;
+    padding: 0px;
+  }
+  #pro_div_roundpri {
+    overflow-y: scroll;
+    height: auto;
+    max-height: 200px;
+  }
+  #process_roundpri {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  #process_roundpri li {
+    display: inline;
+  }
+  </style>
+
+  <template>
+    <paper-drawer-panel force-narrow>
+      <paper-header-panel class="flex layout vertical" drawer>
+        <paper-toolbar>
+          <div>Menu</div>
+        </paper-toolbar>
+        <div>
+          <paper-item on-tap="showIndex" paper-drawer-toggle>Index</paper-item>
+          <paper-item on-tap="showFifo" paper-drawer-toggle>FIFO</paper-item>
+          <paper-item on-tap="showSjf" paper-drawer-toggle>SJF</paper-item>
+          <paper-item on-tap="showPriority" paper-drawer-toggle>Priority</paper-item>
+          <paper-item on-tap="showRound" paper-drawer-toggle>Round-Robin</paper-item>
+          <paper-item on-tap="showRoundPriority" paper-drawer-toggle>Round-Robin with priority</paper-item>
+          <paper-item on-tap="showLottery" paper-drawer-toggle>Lottery</paper-item>
+        </div>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div>Round Robin with Priority</div>
+        </paper-toolbar>
+        <div id="content">
+          <paper-card id="notice" heading="Informations">
+            <div class="card-content">
+              <p>Round Robin with Priority: generally employs time-sharing, giving each job a time slot or quantum (its allowance of CPU time), and interrupting the job if it is not completed by then. The job is resumed next time a time slot is assigned to that process. And, with priority means it takes into consideration the process priority when choosing the next one.</p>
+            </div>
+          </paper-card>
+
+          <div class="container">
+            <paper-card id="simulation_options" heading="Simulation">
+              <div class="card-content">
+                <paper-input id="number_process_roundpri" type="number" min="0" pattern="\d*" label="Number of process"></paper-input>
+                <paper-input id="size_process_roundpri" type="number" min="0" pattern="\d*" label="Max size of process"></paper-input>
+                <paper-input id="size_time_pri" type="number" min="0" pattern="\d*" label="Size of time-slice"></paper-input>
+                <paper-button id="generate_roundpri" raised onclick="generate_roundpri()">Generate processes</paper-button>
+                <paper-button id="scale_roundpri" raised onclick="scale_roundpri()">Scale</paper-button>
+              </div>
+            </paper-card>
+
+            <paper-card id="simulation_logs" class="flexchild" heading="Simulation Logs">
+              <div class="card-content">
+                <ul id="logs_roundpri">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+
+          <div class="container">
+            <paper-card id="processes" class="flexchild" heading="Processes">
+              <div id="pro_div_roundpri" class="card-content">
+                <ul id="process_roundpri">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+
+  <script>
+	Polymer({
+		is: 'round-priority',
+		behaviors: [Polymer.NeonAnimatableBehavior],
+		properties: {
+		  animationConfig: {
+		    value: function () {
+		      return {
+      			'entry': {
+      			  name: 'slide-from-left-animation',
+      			  node: this
+      			},
+      			'exit': {
+      			  name: 'fade-out-animation',
+      			  node: this
+      			}
+   		    }
+		    }
+		  }
+		},
+    showIndex: function() {
+				this.fire('show-index');
+		},
+    showFifo: function() {
+				this.fire('show-fifo');
+		},
+    showSjf: function() {
+				this.fire('show-sjf');
+		},
+    showPriority: function() {
+				this.fire('show-priority');
+		},
+    showRound: function() {
+				this.fire('show-round');
+		},
+    showRoundPriority: function() {
+				this.fire('show-round-priority');
+		},
+    showLottery: function() {
+				this.fire('show-lottery');
+		}
+	});
+
+    var generated_roundpri = false;
+    var process_array_roundpri = [];
+    var finished = 0;
+
+    function generate_roundpri() {
+      process_array_roundpri.length = 0;
+
+      var number_roundpri = document.getElementById("number_process_roundpri");
+      var size_roundpri = document.getElementById("size_process_roundpri");
+
+      if (number_roundpri.value <= 0 || size_roundpri.value <= 0) {
+        window.alert("Number has to be a positive integer.1");
+      } else if (!(number_roundpri.value % 1 === 0) || !(size_roundpri.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.2");
+      } else if ((number_roundpri.value === null || number_roundpri.value === "") || (size_roundpri.value === null || size_roundpri.value === "")) {
+        window.alert("Please fill all fields.");
+      } else {
+        var ul = document.getElementById("process_roundpri");
+
+        while (ul.firstChild) {
+          ul.removeChild(ul.firstChild );
+        }
+
+        for (i = 0; i < number_roundpri.value; i++) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          li.setAttribute('style','display: inline;');
+          ul.appendChild(li);
+
+          var id = i;
+          var priority = Math.round(Math.floor((Math.random() * 100) + 1));
+          var thissize = Math.floor((Math.random() * size_roundpri.value) + 1);
+          var to_go = 0;
+
+          var proc = {pid: id, pri: priority, psize: thissize, togo: to_go, finished: false};
+          process_array_roundpri.push(proc);
+
+          var element = "<paper-card id="+id+"_roundpri"+" style='margin: 0 5px 5px 0; width: 130px;'><div class='card-content'><p>ID: "+id+"</p><p>Priority: "+priority+"</p><p>Size: "+thissize+"</p></div></paper-card>";
+
+          li.innerHTML = li.innerHTML + element;
+        }
+
+        var button = document.getElementById("scale_roundpri");
+        button.disabled = false;
+        generated_roundpri = true;
+      }
+    }
+
+    function scale_roundpri () {
+      var size_time_pri = document.getElementById("size_time_pri");
+
+      if (size_time_pri.value <= 0 || size_time_pri.value <= 0) {
+        window.alert("Number has to be a positive integer.");
+      } else if (!(size_time_pri.value % 1 === 0) || !(size_time_pri.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.");
+      } else if ((size_time_pri.value === null || size_time_pri.value === "")) {
+        window.alert("Please fill size field.");
+      } else {
+        var button = document.getElementById("scale_roundpri");
+        button.disabled = true;
+
+        var log = document.getElementById("logs_roundpri");
+
+        while (log.firstChild) {
+          log.removeChild(log.firstChild);
+        }
+
+        if (!generated_roundpri) {
+          window.alert("Please generate the processes.");
+          button.disabled = false;
+        } else {
+          while (finished < process_array_roundpri.length) {
+            for (i = 0; i < process_array_roundpri.length; i++) {
+              do_process_roundpri(i);
+            }
+          }
+        }
+      }
+    }
+
+    function do_process_roundpri (identification) {
+      process_array_roundpri.sort(function(a,b) {return b.pri - a.pri});
+
+      if (process_array_roundpri[identification].finished == false) {
+        var pid = process_array_roundpri[identification].pid;
+        var log = document.getElementById("logs_roundpri");
+        var size_time_pri = document.getElementById("size_time_pri");
+
+        var li1 = document.createElement('li');
+        li1.setAttribute('class','item');
+        log.appendChild(li1);
+
+        var element1 ="Process: "+pid+" was consumed "+size_time_pri.value+". "+process_array_roundpri[identification].togo+"/"+process_array_roundpri[identification].psize;
+        li1.innerHTML = li1.innerHTML + element1;
+
+        process_array_roundpri[identification].togo = parseInt(process_array_roundpri[identification].togo) + parseInt(size_time_pri.value);
+
+        if (process_array_roundpri[identification].togo >= process_array_roundpri[identification].psize) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          log.appendChild(li);
+
+          var element ="Process: "+pid+" is finished.";
+
+          li.innerHTML = li.innerHTML + element;
+
+          var card = document.getElementById(pid+"_roundpri");
+          card.style.backgroundColor = "#cceeff";
+
+          process_array_roundpri[identification].finished = true;
+
+          finished ++;
+        }
+      }
+    }
+  </script>
+</dom-module>

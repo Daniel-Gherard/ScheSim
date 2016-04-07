@@ -1,0 +1,18 @@
+html, body {
+  margin: 0px;
+  background-color: #FAFAFA;
+  height: 100%;
+  overflow: visible;
+}
+#content {
+  max-width: 1280px;
+  margin: 10px auto 0 auto;
+  height: 100%;
+}
+#notice {
+  max-width: 1280px;
+  width: 100%;
+}
+paper-header-panel {
+    height: 100%;
+}

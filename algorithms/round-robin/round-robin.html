@@ -1,0 +1,260 @@
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/slide-from-left-animation.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module id="round-robin">
+  <style>
+  .flexchild {
+    @apply(--layout-flex);
+  }
+  .container {
+    margin-top: 10px;
+    @apply(--layout-horizontal);
+  }
+  #logs_round {
+    overflow-y: scroll;
+    max-height: 189px;
+    padding: 0px;
+  }
+  #pro_div_round {
+    overflow-y: scroll;
+    height: auto;
+    max-height: 200px;
+  }
+  #process_round {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  #process_round li {
+    display: inline;
+  }
+  </style>
+
+  <template>
+    <paper-drawer-panel force-narrow>
+      <paper-header-panel class="flex layout vertical" drawer>
+        <paper-toolbar>
+          <div>Menu</div>
+        </paper-toolbar>
+        <div>
+          <paper-item on-tap="showIndex" paper-drawer-toggle>Index</paper-item>
+          <paper-item on-tap="showFifo" paper-drawer-toggle>FIFO</paper-item>
+          <paper-item on-tap="showSjf" paper-drawer-toggle>SJF</paper-item>
+          <paper-item on-tap="showPriority" paper-drawer-toggle>Priority</paper-item>
+          <paper-item on-tap="showRound" paper-drawer-toggle>Round-Robin</paper-item>
+          <paper-item on-tap="showRoundPriority" paper-drawer-toggle>Round-Robin with priority</paper-item>
+          <paper-item on-tap="showLottery" paper-drawer-toggle>Lottery</paper-item>
+        </div>
+      </paper-header-panel>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div>Round Robin</div>
+        </paper-toolbar>
+        <div id="content">
+          <paper-card id="notice" heading="Informations">
+            <div class="card-content">
+              <p>Round Robin: generally employs time-sharing, giving each job a time slot or quantum (its allowance of CPU time), and interrupting the job if it is not completed by then. The job is resumed next time a time slot is assigned to that process.</p>
+            </div>
+          </paper-card>
+
+          <div class="container">
+            <paper-card id="simulation_options" heading="Simulation">
+              <div class="card-content">
+                <paper-input id="number_process_round" type="number" min="0" pattern="\d*" label="Number of process"></paper-input>
+                <paper-input id="size_process_round" type="number" min="0" pattern="\d*" label="Max size of process"></paper-input>
+                <paper-input id="size_time" type="number" min="0" pattern="\d*" label="Size of time-slice"></paper-input>
+                <paper-button id="generate_round" raised onclick="generate_round()">Generate processes</paper-button>
+                <paper-button id="scale_round" raised onclick="scale_round()">Scale</paper-button>
+              </div>
+            </paper-card>
+
+            <paper-card id="simulation_logs" class="flexchild" heading="Simulation Logs">
+              <div class="card-content">
+                <ul id="logs_round">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+
+          <div class="container">
+            <paper-card id="processes" class="flexchild" heading="Processes">
+              <div id="pro_div_round" class="card-content">
+                <ul id="process_round">
+                </ul>
+              </div>
+            </paper-card>
+          </div>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
+
+  <script>
+	Polymer({
+		is: 'round-robin',
+		behaviors: [Polymer.NeonAnimatableBehavior],
+		properties: {
+		  animationConfig: {
+		    value: function () {
+		      return {
+      			'entry': {
+      			  name: 'slide-from-left-animation',
+      			  node: this
+      			},
+      			'exit': {
+      			  name: 'fade-out-animation',
+      			  node: this
+      			}
+   		    }
+		    }
+		  }
+		},
+    showIndex: function() {
+				this.fire('show-index');
+		},
+    showFifo: function() {
+				this.fire('show-fifo');
+		},
+    showSjf: function() {
+				this.fire('show-sjf');
+		},
+    showPriority: function() {
+				this.fire('show-priority');
+		},
+    showRound: function() {
+				this.fire('show-round');
+		},
+    showRoundPriority: function() {
+				this.fire('show-round-priority');
+		},
+    showLottery: function() {
+				this.fire('show-lottery');
+		}
+	});
+
+    var generated_round = false;
+    var process_array_round = [];
+    var finished = 0;
+
+    function generate_round() {
+      process_array_round.length = 0;
+
+      var number_round = document.getElementById("number_process_round");
+      var size_round = document.getElementById("size_process_round");
+
+      if (number_round.value <= 0 || size_round.value <= 0) {
+        window.alert("Number has to be a positive integer.");
+      } else if (!(number_round.value % 1 === 0) || !(size_round.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.");
+      } else if ((number_round.value === null || number_round.value === "") || (size_round.value === null || size_round.value === "")) {
+        window.alert("Please fill all fields.");
+      } else {
+        var ul = document.getElementById("process_round");
+
+        while (ul.firstChild) {
+          ul.removeChild(ul.firstChild );
+        }
+
+        for (i = 0; i < number_round.value; i++) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          li.setAttribute('style','display: inline;');
+          ul.appendChild(li);
+
+          var id = i;
+          var priority = Math.round(Math.floor((Math.random() * 100) + 1));
+          var thissize = Math.floor((Math.random() * size_round.value) + 1);
+          var to_go = 0;
+
+          var proc = {pid: id, pri: priority, psize: thissize, togo: to_go, finished: false};
+          process_array_round.push(proc);
+
+          var element = "<paper-card id="+id+"_round"+" style='margin: 0 5px 5px 0; width: 130px;'><div class='card-content'><p>ID: "+id+"</p><p>Priority: "+priority+"</p><p>Size: "+thissize+"</p></div></paper-card>";
+
+          li.innerHTML = li.innerHTML + element;
+        }
+
+        var button = document.getElementById("scale_round");
+        button.disabled = false;
+        generated_round = true;
+      }
+    }
+
+    function scale_round () {
+      var size_time = document.getElementById("size_time");
+
+      if (size_time.value <= 0 || size_time.value <= 0) {
+        window.alert("Number has to be a positive integer.");
+      } else if (!(size_time.value % 1 === 0) || !(size_time.value % 1 === 0)) {
+        window.alert("Number has to be a positive integer.");
+      } else if ((size_time.value === null || size_time.value === "")) {
+        window.alert("Please fill size field.");
+      } else {
+        var button = document.getElementById("scale_round");
+        button.disabled = true;
+
+        var log = document.getElementById("logs_round");
+
+        while (log.firstChild) {
+          log.removeChild(log.firstChild);
+        }
+
+        if (!generated_round) {
+          window.alert("Please generate the processes.");
+          button.disabled = false;
+        } else {
+          while (finished < process_array_round.length) {
+            for (i = 0; i < process_array_round.length; i++) {
+              do_process_round(i);
+            }
+          }
+        }
+      }
+    }
+
+    function do_process_round (identification) {
+      if (process_array_round[identification].finished == false) {
+        var pid = process_array_round[identification].pid;
+        var log = document.getElementById("logs_round");
+        var size_time = document.getElementById("size_time");
+
+        var li1 = document.createElement('li');
+        li1.setAttribute('class','item');
+        log.appendChild(li1);
+
+        var element1 ="Process: "+pid+" was consumed "+size_time.value+". "+process_array_round[identification].togo+"/"+process_array_round[identification].psize;
+        li1.innerHTML = li1.innerHTML + element1;
+
+        process_array_round[identification].togo = parseInt(process_array_round[identification].togo) + parseInt(size_time.value);
+
+        if (process_array_round[identification].togo >= process_array_round[identification].psize) {
+          var li = document.createElement('li');
+          li.setAttribute('class','item');
+          log.appendChild(li);
+
+          var element ="Process: "+pid+" is finished.";
+
+          li.innerHTML = li.innerHTML + element;
+
+          var card = document.getElementById(pid+"_round");
+          card.style.backgroundColor = "#cceeff";
+
+          process_array_round[identification].finished = true;
+
+          finished ++;
+        }
+      }
+    }
+  </script>
+</dom-module>
